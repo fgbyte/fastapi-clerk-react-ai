@@ -6,7 +6,7 @@ type Props = {}
 
 export const ChallengeGenerator = (props: Props) => {
 	//States
-	const [challegen, setChallenge] = useState(null)
+	const [challenge, setChallenge] = useState(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState(null)
 	const [difficulty, setDifficulty] = useState('easy')
@@ -24,6 +24,7 @@ export const ChallengeGenerator = (props: Props) => {
 			<h2>Coding Challenge Generator</h2>
 
 			<div className="quota-display">
+				{/* quota_remaining is a value from the db, if it is 0, the user can't generate more challenges */}
 				<p>Challenges remaining today: {quota?.quota_remaining || 0}</p>
 
 				{quota?.quota_remaining === 0 && <p>Next reset: {0}</p>}
@@ -56,6 +57,8 @@ export const ChallengeGenerator = (props: Props) => {
 					<p>{error}</p>
 				</div>
 			)}
+
+			{challenge && <MCQChallenge challenge={challenge} />}
 		</div>
 	)
 }
