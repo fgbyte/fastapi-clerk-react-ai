@@ -1,7 +1,5 @@
 type Props = {}
 
-const MCQChallenge = (props: Props) => {
+export const MCQChallenge = (props: Props) => {
 	return <div>MCQChallenge</div>
 }
-
-export default MCQChallenge
