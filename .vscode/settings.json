@@ -24,5 +24,10 @@
     },
     "[css]": {
         "editor.defaultFormatter": "biomejs.biome"
-    }
+    },
+    "cSpell.words": [
+        "autoflush",
+        "nullable",
+        "sessionmaker"
+    ]
 }

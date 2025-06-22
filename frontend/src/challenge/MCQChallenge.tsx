@@ -3,7 +3,7 @@
 /*
 the questions comes in json format like this:
  {
- 	"content":
+ 	"title":
  	"options": [1, 2, 3, 4],
  	"correctAnswer: 0",
  		"explanation": ""
@@ -14,13 +14,12 @@ import { useState } from 'react'
 
 export interface Challenge {
 	id: string
-	content: string
+	difficulty: string
+	title: string
 	options: string[]
 	correctAnswer: number
 	explanation: string
 	correct_answer_id: number
-	difficulty: string
-	title: string
 }
 
 type Props = {

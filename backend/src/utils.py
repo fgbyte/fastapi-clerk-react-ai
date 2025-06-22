@@ -37,6 +37,8 @@ def authenticate_and_get_user_details(request):
                 jwt_key=os.getenv('JWT_KEY')
             )
         )
+
+        # Check if the user is signed in
         if not request_state.is_signed_in:
             raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -45,6 +47,7 @@ def authenticate_and_get_user_details(request):
             raise HTTPException(
                 status_code=500, detail="Internal authentication error: User payload not found.")
 
+        # Get the user id from the 'subject' field in the payload of the token
         user_id = request_state.payload.get('sub')
 
         return {"user_id": user_id}
