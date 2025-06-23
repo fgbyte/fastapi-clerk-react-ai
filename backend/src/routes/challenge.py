@@ -30,18 +30,18 @@ class ChallengeRequest(BaseModel):
 
 # Routes
 @router.post('/generate-challenge')
-async def generate_challenge(request: ChallengeRequest, db: Session = Depends(get_db)):
+async def generate_challenge(request: ChallengeRequest, request_obj: Request, db: Session = Depends(get_db)):
     try:
-        user_details = authenticate_and_get_user_details(request)
+        user_details = authenticate_and_get_user_details(request_obj)
         user_id = user_details.get('user_id')
 
         quota = get_challenge_quota(db, user_id)  # type: ignore
         if not quota:
-            create_challenge_quota(db, user_id)  # type: ignore
+            quota = create_challenge_quota(db, user_id)  # type: ignore
 
         quota = reset_quota_if_needed(db, quota)
 
-        if quota.remaining_quota <= 0:
+        if quota.quota_remaining <= 0:  # type: ignore
             raise HTTPException(
                 status_code=4293, detail="Quota exhausted.")
 
@@ -52,10 +52,13 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
             db=db,
             difficulty=request.difficulty,
             created_by=user_id,  # type: ignore
-            **challenge_data
+            title=challenge_data['title'],
+            options=json.dumps(challenge_data['options']),
+            correct_answer_id=challenge_data['correct_answer_id'],
+            explanation=challenge_data['explanation'],
         )
 
-        quota.remaining_quota -= 1
+        quota.quota_remaining -= 1  # type: ignore
         db.commit()
 
         return {
