@@ -1,23 +1,65 @@
 import { useEffect, useId, useState } from 'react'
-
 import { MCQChallenge } from './MCQChallenge'
+import { useAPI } from '../utils/api'
 
-type Props = {}
+// Define the Quota interface
+interface Quota {
+	user_id: string;
+	quota_remaining: number;
+	last_reset_data: string; // ISO date string
+}
 
-export const ChallengeGenerator = (props: Props) => {
+export const ChallengeGenerator = () => {
 	//States
 	const [challenge, setChallenge] = useState(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState(null)
 	const [difficulty, setDifficulty] = useState('easy')
-	const [quota, setQueota] = useState(null)
+	const [quota, setQuota] = useState<Quota | null>(null) // Use the new Quota interface
+
+
+	const {makeRequest} = useAPI()
 
 	//Effects
-	const fetchQuota = async () => {}
+	// biome-ignore lint/correctness/useExhaustiveDependencies: ok
+		useEffect(() => {
+		fetchQuota()
+	}, [])
 
-	const generateChallenge = async () => {}
 
-	const getNextResetTime = () => {}
+	const fetchQuota = async () => {
+		try {
+			const data = await makeRequest('quota')
+			setQuota(data)
+		} catch(err) {
+			console.log(err)
+		}
+	}
+
+	const generateChallenge = async () => {
+		setIsLoading(true)
+		setError(null)
+
+		try {
+			const data = await makeRequest('generate-challenge', {
+				method: "POST",
+				body: JSON.stringify({difficulty})
+			})
+			setChallenge(data)
+			fetchQuota()
+		} catch (err) {
+			setError(err.message || "Filed to generate challenge")
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	const getNextResetTime = () => {
+		if (!quota?.last_reset_data) return null
+		const resetDate = new Date(quota.last_reset_data)
+		resetDate.setHours(resetDate.getHours() * 24)
+		return resetDate
+	}
 
 	return (
 		<div className="challenge-container">
@@ -27,7 +69,7 @@ export const ChallengeGenerator = (props: Props) => {
 				{/* quota_remaining is a value from the db, if it is 0, the user can't generate more challenges */}
 				<p>Challenges remaining today: {quota?.quota_remaining || 0}</p>
 
-				{quota?.quota_remaining === 0 && <p>Next reset: {0}</p>}
+				{quota?.quota_remaining === 0 && <p>Next reset: {getNextResetTime()?.toLocaleString()}</p>}
 			</div>
 
 			<div className="difficulty-selector">
@@ -47,6 +89,7 @@ export const ChallengeGenerator = (props: Props) => {
 			<button
 				className="generate-button"
 				onClick={generateChallenge}
+				// disabled={false} //debug
 				disabled={isLoading || quota?.quota_remaining === 0}
 			>
 				{isLoading ? 'Generating...' : 'Generate Challenge'}
