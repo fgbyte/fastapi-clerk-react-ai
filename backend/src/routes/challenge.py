@@ -97,3 +97,4 @@ async def get_quota(request: Request, db: Session = Depends(get_db)):
             'last_reset_date': datetime.now()
         }
     quota = reset_quota_if_needed(db, quota)
+    return quota
