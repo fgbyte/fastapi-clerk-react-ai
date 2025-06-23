@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { type Challenge, MCQChallenge } from '../challenge/MCQChallenge'
+import { useAPI } from '../utils/api'
 
 type Props = {}
 
@@ -9,12 +10,26 @@ export const HistoryPanel = (props: Props) => {
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null) // Specify the type of error
 
+	const {makeRequest} = useAPI()
+
 	//Effects
 	useEffect(() => {
 		fetchHistory()
 	}, []) //cuando cargue la pagina se haga fetch de las history
 
-	const fetchHistory = async () => {}
+	const fetchHistory = async () => {
+		setIsLoading(true)
+		setError(null)
+
+		try {
+			const data = await makeRequest('my-history')
+			setHistory(data.challenges)
+		} catch(err) {
+			setError('Failed to load History')
+		} finally {
+			setIsLoading(false)
+		}
+	}
 
 	//Conditions
 	if (isLoading) {
@@ -42,7 +57,7 @@ export const HistoryPanel = (props: Props) => {
 							<MCQChallenge
 								challenge={challenge}
 								key={challenge.id}
-								showExplanation
+								showExplanation={true}
 							/>
 						)
 					})}
