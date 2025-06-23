@@ -14,10 +14,11 @@ import { useState } from 'react'
 
 export interface Challenge {
 	id: string
-	difficulty: string
-	title: string
+	question: string
 	options: string[]
 	correctAnswer: number
+	difficulty: string
+	title: string
 	explanation: string
 	correct_answer_id: number
 }

@@ -1,6 +1,8 @@
 import { useEffect, useId, useState } from 'react'
 import { MCQChallenge } from './MCQChallenge'
 import { useAPI } from '../utils/api'
+import { type Challenge } from './MCQChallenge'
+
 
 // Define the Quota interface
 interface Quota {
@@ -9,11 +11,13 @@ interface Quota {
 	last_reset_data: string; // ISO date string
 }
 
+
+
 export const ChallengeGenerator = () => {
 	//States
-	const [challenge, setChallenge] = useState(null)
+	const [challenge, setChallenge] = useState<Challenge | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
-	const [error, setError] = useState(null)
+	const [error, setError] = useState<string | null>(null)
 	const [difficulty, setDifficulty] = useState('easy')
 	const [quota, setQuota] = useState<Quota | null>(null) // Use the new Quota interface
 
@@ -41,14 +45,18 @@ export const ChallengeGenerator = () => {
 		setError(null)
 
 		try {
-			const data = await makeRequest('generate-challenge', {
+			const data: Challenge = await makeRequest('generate-challenge', {
 				method: "POST",
 				body: JSON.stringify({difficulty})
 			})
 			setChallenge(data)
 			fetchQuota()
-		} catch (err) {
-			setError(err.message || "Filed to generate challenge")
+		} catch (err: unknown) {
+			if (err instanceof Error) {
+				setError(err.message)
+			} else {
+				setError("Failed to generate challenge")
+			}
 		} finally {
 			setIsLoading(false)
 		}
