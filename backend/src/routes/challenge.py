@@ -2,6 +2,8 @@ from clerk_backend_api import User
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+from ..ai_generator import generate_challenge_with_ai
 from ..database.db import (
     get_challenge_quota,
     create_challenge,
@@ -43,14 +45,28 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
             raise HTTPException(
                 status_code=4293, detail="Quota exhausted.")
 
-        challenge_data = None
-
-        # Todo: Generate Challenge -> AI
+        # Call AI generate function
+        challenge_data = generate_challenge_with_ai(request.difficulty)
+        # Create the challenge
+        new_challenge = create_challenge(
+            db=db,
+            difficulty=request.difficulty,
+            created_by=user_id,  # type: ignore
+            **challenge_data
+        )
 
         quota.remaining_quota -= 1
         db.commit()
 
-        return challenge_data
+        return {
+            "id": new_challenge.id,
+            "difficulty": request.difficulty,
+            "title": new_challenge.title,
+            "options": json.loads(str(new_challenge.options)),
+            "correct_answer_id": new_challenge.correct_answer_id,
+            "explanation": new_challenge.explanation,
+            "timestamp": new_challenge.date_created.isoformat()
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

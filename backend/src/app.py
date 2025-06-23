@@ -6,7 +6,6 @@ from .routes import challenge
 
 clerk_sdk = Clerk(bearer_auth=os.getenv("CLERK_SECRET_KEY"))
 
-
 app = FastAPI()
 
 app.add_middleware(
@@ -17,4 +16,4 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-app.include_router(challenge.router)
+app.include_router(challenge.router, prefix="/api")
